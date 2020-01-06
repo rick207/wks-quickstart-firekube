@@ -134,33 +134,45 @@ if [ "$(config_backend)" == "ignite" ]; then
 fi
 check_version wksctl "${WKSCTL_VERSION}"
 
-log "Creating footloose manifest"
-jk generate -f config.yaml setup.js
+if [ "$(config_backend)" != "ec2" ]; then
 
-cluster_key="cluster-key"
-if [ ! -f "${cluster_key}" ]; then
-    # Create the cluster ssh key with the user credentials.
-    log "Creating SSH key"
-    ssh-keygen -q -t rsa -b 4096 -C firekube@footloose.mail -f ${cluster_key} -N ""
+   log "Creating footloose manifest"
+   jk generate -f config.yaml setup.js
+
+   cluster_key="cluster-key"
+   if [ ! -f "${cluster_key}" ]; then
+       # Create the cluster ssh key with the user credentials.
+       log "Creating SSH key"
+       ssh-keygen -q -t rsa -b 4096 -C firekube@footloose.mail -f ${cluster_key} -N ""
+   fi
+
+   log "Creating virtual machines"
+   do_footloose create
+
+   log "Creating Cluster API manifests"
+   status="footloose-status.yaml"
+   do_footloose status -o json > "${status}"
+   jk generate -f config.yaml -f "${status}" setup.js
+   rm -f "${status}"
+
+else
+   log "Using ec2, files need to be updated manually"
 fi
-
-log "Creating virtual machines"
-do_footloose create
-
-log "Creating Cluster API manifests"
-status="footloose-status.yaml"
-do_footloose status -o json > "${status}"
-jk generate -f config.yaml -f "${status}" setup.js
-rm -f "${status}"
 
 log "Updating container images and git parameters"
 wksctl init --git-url="$(git_http_url "$(git_remote_fetchurl "${git_remote}")")" --git-branch="$(git_current_branch)"
 
-log "Pushing initial cluster configuration"
-git add config.yaml footloose.yaml machines.yaml flux.yaml wks-controller.yaml
+if [ "$(config_backend)" != "ec2" ]; then
+   log "Pushing initial cluster configuration"
+   git add config.yaml footloose.yaml machines.yaml flux.yaml wks-controller.yaml
 
-git diff-index --quiet HEAD || git commit -m "Initial cluster configuration"
-git push "${git_remote}" HEAD
+   git diff-index --quiet HEAD || git commit -m "Initial cluster configuration"
+   git push "${git_remote}" HEAD
+
+else
+   log "Using ec2, not pushing to git" 
+fi
+
 
 log "Installing Kubernetes cluster"
 apply_args=(
