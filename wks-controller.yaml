@@ -43,6 +43,7 @@ spec:
       containers:
       - name: controller
         image: jrryjcksn/wks-controller:master-69d98f1d-WIP
+        imagePullPolicy: Always
         command:
         - /bin/controller
         - --verbose
