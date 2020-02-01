@@ -33,4 +33,6 @@ spec:
         kind: docker
         package: docker-ce
         version: 18.09.7
+      apiServer:
+        externalLoadBalancer: 172.10.10.10:8443
 
