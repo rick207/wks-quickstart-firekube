@@ -40,8 +40,8 @@ items:
   kind: Machine
   metadata:
     labels:
-      set: worker
-    name: worker-0
+      set: master
+    name: worker-2
     namespace: weavek8sops
   spec:
     providerSpec:
