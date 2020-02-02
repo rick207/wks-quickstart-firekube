@@ -33,4 +33,6 @@ spec:
         kind: docker
         package: docker-ce
         version: 18.09.7
+      apiServer:
+        externalLoadBalancer: mre-k8sproxy
 
