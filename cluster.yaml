@@ -32,7 +32,7 @@ spec:
       cri:
         kind: docker
         package: docker-ce
-        version: 19.03.1
+        version: 19.03.7
       apiServer:
         externalLoadBalancer: mre-k8sproxy
 
